@@ -28,6 +28,7 @@ Without Supabase env vars, the public site uses local catalog/section fallbacks 
    - `001_initial_schema.sql`
    - `002_seed_content.sql`
    - `003_storage.sql`
+   - `004_media_assets_policies.sql`
 3. Set environment variables locally and on Vercel:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
@@ -44,10 +45,24 @@ values ('YOUR_AUTH_USER_UUID', 'you@example.com', 'admin');
 
 3. Sign in at `/admin/login`.
 
+## Image uploads (Supabase Storage)
+
+While logged in as admin, use **Upload image** on:
+
+- **Products** → edit product → gallery (bucket `public-media`)
+- **Landing Page** → section image
+- **Promotions** → promo artwork
+- **Testimonials** → poster image
+- **Payments** → QR code (bucket `payment-qr`)
+- **Settings** → site logo
+- **Media** → general library
+
+Ensure migrations `003_storage.sql` and `004_media_assets_policies.sql` are applied.
+
 ## Payment QR
 
 1. Open **Admin → Payments**.
-2. Add GCash/Maya/bank method with account details and QR image URL (upload via **Admin → Media** to `public-media` or `payment-qr` bucket).
+2. Add GCash/Maya/bank method and use **Upload image** for the QR (stored in `payment-qr`).
 
 ## Shipping fee
 

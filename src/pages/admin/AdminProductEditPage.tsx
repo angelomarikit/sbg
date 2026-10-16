@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ProductImagesEditor } from "@/components/admin/ProductImagesEditor";
 
 type ProductForm = {
   name: string;
@@ -89,21 +90,35 @@ export function AdminProductEditPage() {
         updated_at: new Date().toISOString(),
       };
       if (isNew) {
-        const { error } = await supabase.from("products").insert(payload);
+        const { data, error } = await supabase
+          .from("products")
+          .insert(payload)
+          .select("id")
+          .single();
         if (error) throw error;
-      } else {
-        const { error } = await supabase.from("products").update(payload).eq("id", id);
-        if (error) throw error;
+        await supabase.from("activity_logs").insert({
+          action_type: "product_created",
+          entity_type: "product",
+          entity_id: data.id,
+        });
+        return data.id as string;
       }
+      const { error } = await supabase.from("products").update(payload).eq("id", id);
+      if (error) throw error;
       await supabase.from("activity_logs").insert({
-        action_type: isNew ? "product_created" : "product_updated",
+        action_type: "product_updated",
         entity_type: "product",
         entity_id: id,
       });
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (savedId) => {
       toast.success("Product saved");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      if (isNew && savedId) {
+        navigate(`/admin/products/${savedId}`);
+        return;
+      }
       navigate("/admin/products");
     },
     onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
@@ -177,6 +192,8 @@ export function AdminProductEditPage() {
           Save product
         </Button>
       </form>
+
+      <ProductImagesEditor productId={isNew ? null : id} />
     </div>
   );
 }

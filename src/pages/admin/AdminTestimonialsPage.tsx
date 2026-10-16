@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { getSupabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 async function fetchTestimonials() {
   const supabase = getSupabase();
@@ -30,11 +31,24 @@ export function AdminTestimonialsPage() {
     },
   });
 
+  const updateImage = useMutation({
+    mutationFn: async ({ id, image_url }: { id: string; image_url: string }) => {
+      const supabase = getSupabase();
+      const { error } = await supabase.from("testimonials").update({ image_url }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Testimonial image updated");
+      qc.invalidateQueries({ queryKey: ["admin-testimonials"] });
+    },
+  });
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-deep">Testimonials</h1>
       <p className="text-sm text-muted">
-        Disease-related or treatment claims require manual compliance review before publishing.
+        Upload poster images to Supabase Storage. Disease-related claims require compliance review
+        before publishing.
       </p>
       <div className="space-y-4">
         {(items ?? []).map((item) => (
@@ -47,9 +61,16 @@ export function AdminTestimonialsPage() {
               {item.requires_compliance_review && <Badge variant="sale">Compliance review</Badge>}
             </div>
             <p className="mt-2 text-sm text-muted">{item.quote}</p>
-            {item.image_url && (
-              <img src={item.image_url} alt="" className="mt-3 max-h-48 rounded-lg object-cover" />
-            )}
+            <div className="mt-4">
+              <ImageUploadField
+                label="Testimonial poster"
+                folder="testimonials"
+                category="testimonials"
+                value={item.image_url ?? ""}
+                onChange={(url) => updateImage.mutate({ id: item.id, image_url: url })}
+                previewClassName="max-h-56"
+              />
+            </div>
             {item.approval_status !== "approved" && (
               <Button size="sm" className="mt-3" onClick={() => approveMutation.mutate(item.id)}>
                 Approve & publish

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 async function fetchMethods() {
   const supabase = getSupabase();
@@ -105,13 +106,16 @@ export function AdminPaymentsPage() {
             onChange={(e) => setForm({ ...form, account_number: e.target.value })}
           />
         </div>
-        <div>
-          <Label>QR image URL</Label>
-          <Input
-            value={form.qr_image_url}
-            onChange={(e) => setForm({ ...form, qr_image_url: e.target.value })}
-          />
-        </div>
+        <ImageUploadField
+          label="Payment QR code"
+          bucket="payment-qr"
+          folder="qr"
+          category="payment_qr"
+          allowUrlFallback
+          value={form.qr_image_url}
+          onChange={(url) => setForm({ ...form, qr_image_url: url })}
+          previewClassName="max-h-64"
+        />
         <div>
           <Label>Instructions</Label>
           <Textarea

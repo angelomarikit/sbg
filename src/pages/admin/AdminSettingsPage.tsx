@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 async function fetchSettings() {
   const supabase = getSupabase();
@@ -19,6 +20,7 @@ export function AdminSettingsPage() {
   const { data: settings } = useQuery({ queryKey: ["admin-settings"], queryFn: fetchSettings });
   const [form, setForm] = useState({
     brand_name: "",
+    logo_url: "",
     contact_phone: "",
     contact_email: "",
     messenger_url: "",
@@ -33,6 +35,7 @@ export function AdminSettingsPage() {
     if (settings) {
       setForm({
         brand_name: settings.brand_name ?? "",
+        logo_url: settings.logo_url ?? "",
         contact_phone: settings.contact_phone ?? "",
         contact_email: settings.contact_email ?? "",
         messenger_url: settings.messenger_url ?? "",
@@ -76,6 +79,14 @@ export function AdminSettingsPage() {
           <Label>Brand name</Label>
           <Input value={form.brand_name} onChange={(e) => setForm({ ...form, brand_name: e.target.value })} />
         </div>
+        <ImageUploadField
+          label="Site logo"
+          folder="brand"
+          category="brand"
+          value={form.logo_url}
+          onChange={(url) => setForm({ ...form, logo_url: url })}
+          previewClassName="max-h-24"
+        />
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <Label>Contact phone</Label>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { SiteSection } from "@/types/database";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 
 const sectionKeys = [
   "hero",
@@ -129,13 +130,13 @@ export function AdminPagesPage() {
             onChange={(e) => setDraft((d) => ({ ...d, body: e.target.value }))}
           />
         </div>
-        <div>
-          <Label>Image URL</Label>
-          <Input
-            value={draft.image_url ?? selected?.image_url ?? ""}
-            onChange={(e) => setDraft((d) => ({ ...d, image_url: e.target.value }))}
-          />
-        </div>
+        <ImageUploadField
+          label="Section image"
+          folder={`sections/${selectedKey}`}
+          category="banners"
+          value={draft.image_url ?? selected?.image_url ?? ""}
+          onChange={(url) => setDraft((d) => ({ ...d, image_url: url }))}
+        />
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"

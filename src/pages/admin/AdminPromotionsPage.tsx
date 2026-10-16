@@ -1,7 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSupabase } from "@/lib/supabase/client";
 import { formatPHP } from "@/lib/formatting/currency";
 import { Badge } from "@/components/ui/badge";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import { toast } from "sonner";
 
 async function fetchPromotions() {
   const supabase = getSupabase();
@@ -11,16 +13,33 @@ async function fetchPromotions() {
 }
 
 export function AdminPromotionsPage() {
+  const qc = useQueryClient();
   const { data: promos, isLoading } = useQuery({
     queryKey: ["admin-promotions"],
     queryFn: fetchPromotions,
+  });
+
+  const updateImage = useMutation({
+    mutationFn: async ({ id, image_url }: { id: string; image_url: string }) => {
+      const supabase = getSupabase();
+      const { error } = await supabase
+        .from("promotions")
+        .update({ image_url, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Promotion image updated");
+      qc.invalidateQueries({ queryKey: ["admin-promotions"] });
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Update failed"),
   });
 
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-deep">Promotional Packages</h1>
       <p className="text-sm text-muted">
-        Compare live pricing with promotional artwork. Update images or DB prices when they diverge.
+        Upload package artwork to Supabase Storage. Keep DB prices aligned with your promo images.
       </p>
       {isLoading ? (
         <p>Loading…</p>
@@ -36,7 +55,8 @@ export function AdminPromotionsPage() {
                 </div>
                 <p className="mt-1 text-sm text-muted">{promo.description}</p>
                 <p className="mt-3 text-sm">
-                  DB price: {formatPHP(Number(promo.promotional_price))} (was {formatPHP(Number(promo.regular_total))})
+                  DB price: {formatPHP(Number(promo.promotional_price))} (was{" "}
+                  {formatPHP(Number(promo.regular_total))})
                 </p>
                 <p className="text-sm text-primary">Save {formatPHP(savings)}</p>
                 {promo.image_price_note && (
@@ -44,9 +64,16 @@ export function AdminPromotionsPage() {
                     Image check: {promo.image_price_note}
                   </p>
                 )}
-                {promo.image_url && (
-                  <img src={promo.image_url} alt="" className="mt-3 max-h-40 rounded-lg object-cover" />
-                )}
+                <div className="mt-4">
+                  <ImageUploadField
+                    label="Promo image"
+                    folder={`promotions/${promo.slug}`}
+                    category="promotions"
+                    value={promo.image_url ?? ""}
+                    onChange={(url) => updateImage.mutate({ id: promo.id, image_url: url })}
+                    allowUrlFallback
+                  />
+                </div>
               </div>
             );
           })}
