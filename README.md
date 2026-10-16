@@ -32,6 +32,7 @@ Without Supabase env vars, the public site uses local catalog/section fallbacks 
 3. Set environment variables locally and on Vercel:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_SITE_URL` — your public site URL (required for Facebook/Messenger link previews)
 
 ### First admin user
 
@@ -82,8 +83,10 @@ npm run build
 2. Framework preset: **Vite**.
 3. Build command: `npm run build`
 4. Output directory: `dist`
-5. Add the same Supabase env vars.
+5. Add the same env vars, including `VITE_SITE_URL=https://your-domain.com`.
 6. SPA routing is handled by [`vercel.json`](vercel.json).
+
+Default share preview image: `public/assets/og/og-share.jpg` (Open Graph + Twitter `summary_large_image`).
 
 ## Brand assets
 

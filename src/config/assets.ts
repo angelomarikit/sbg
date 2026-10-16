@@ -1,6 +1,7 @@
 export const localAssets = {
   brand: {
     logo: "/assets/brand/logo.png",
+    ogShare: "/assets/og/og-share.jpg",
   },
   banners: {
     hero: "/assets/banners/banner.jpeg",
