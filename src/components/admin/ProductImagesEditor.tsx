@@ -7,6 +7,13 @@ import { Label } from "@/components/ui/label";
 import { getSupabase } from "@/lib/supabase/client";
 import { uploadImageToStorage } from "@/lib/supabase/uploadMedia";
 
+export type PendingProductImage = {
+  clientId: string;
+  publicUrl: string;
+  storagePath: string;
+  isPrimary: boolean;
+};
+
 type ProductImageRow = {
   id: string;
   product_id: string;
@@ -26,7 +33,24 @@ async function fetchProductImages(productId: string) {
   return (data ?? []) as ProductImageRow[];
 }
 
-export function ProductImagesEditor({ productId }: { productId: string | null }) {
+function newClientId() {
+  return crypto.randomUUID();
+}
+
+type ProductImagesEditorProps = {
+  productId: string | null;
+  /** Used for storage folder when creating a product (before save). */
+  stagingKey: string;
+  pendingImages: PendingProductImage[];
+  onPendingImagesChange: (images: PendingProductImage[]) => void;
+};
+
+export function ProductImagesEditor({
+  productId,
+  stagingKey,
+  pendingImages,
+  onPendingImagesChange,
+}: ProductImagesEditorProps) {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -39,19 +63,35 @@ export function ProductImagesEditor({ productId }: { productId: string | null })
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-product-images", productId] });
 
+  const uploadFolder = productId
+    ? `products/${productId}`
+    : `products/staging/${stagingKey || "new"}`;
+
   const uploadAndAttach = async (file: File) => {
-    if (!productId) {
-      toast.error("Save the product first, then upload images.");
-      return;
-    }
     setUploading(true);
     try {
       const { publicUrl, storagePath } = await uploadImageToStorage({
         file,
         bucket: "public-media",
-        folder: `products/${productId}`,
+        folder: uploadFolder,
         category: "products",
       });
+
+      if (!productId) {
+        const isFirst = pendingImages.length === 0;
+        onPendingImagesChange([
+          ...pendingImages,
+          {
+            clientId: newClientId(),
+            publicUrl,
+            storagePath,
+            isPrimary: isFirst,
+          },
+        ]);
+        toast.success("Image uploaded — save the product to publish it");
+        return;
+      }
+
       const supabase = getSupabase();
       const isFirst = !(images?.length);
       const { error } = await supabase.from("product_images").insert({
@@ -98,45 +138,82 @@ export function ProductImagesEditor({ productId }: { productId: string | null })
     },
   });
 
-  if (!productId) {
-    return (
-      <p className="rounded-lg border border-dashed border-border bg-surface p-4 text-sm text-muted">
-        Save this product once to enable image uploads to Supabase Storage.
-      </p>
+  const setPendingPrimary = (clientId: string) => {
+    onPendingImagesChange(
+      pendingImages.map((img) => ({
+        ...img,
+        isPrimary: img.clientId === clientId,
+      })),
     );
-  }
+  };
+
+  const removePending = (clientId: string) => {
+    const next = pendingImages.filter((img) => img.clientId !== clientId);
+    if (next.length && !next.some((img) => img.isPrimary)) {
+      next[0] = { ...next[0], isPrimary: true };
+    }
+    onPendingImagesChange(next);
+  };
+
+  const savedGallery = images ?? [];
+  const showPending = !productId;
 
   return (
     <div className="space-y-3 rounded-xl border border-border bg-surface/50 p-4">
-      <Label>Product images (Supabase Storage)</Label>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {(images ?? []).map((img) => (
-          <div key={img.id} className="relative rounded-lg border border-border bg-white p-2">
-            {img.public_url && (
-              <img src={img.public_url} alt="" className="mx-auto h-36 w-full object-contain" />
-            )}
-            <div className="mt-2 flex gap-1">
-              <Button
-                type="button"
-                size="sm"
-                variant={img.is_primary ? "default" : "secondary"}
-                onClick={() => setPrimary.mutate(img.id)}
-              >
-                <Star className="mr-1 h-3 w-3" />
-                {img.is_primary ? "Primary" : "Set primary"}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() => removeImage.mutate(img.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
+      <div>
+        <Label>Product images</Label>
+        <p className="mt-1 text-xs text-muted">
+          Upload photos to Supabase Storage. You can add images before saving a new product; they
+          attach when you click Save product.
+        </p>
       </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {showPending &&
+          pendingImages.map((img) => (
+            <div key={img.clientId} className="relative rounded-lg border border-border bg-white p-2">
+              <img src={img.publicUrl} alt="" className="mx-auto h-36 w-full object-contain" />
+              <div className="mt-2 flex gap-1">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={img.isPrimary ? "default" : "secondary"}
+                  onClick={() => setPendingPrimary(img.clientId)}
+                >
+                  <Star className="mr-1 h-3 w-3" />
+                  {img.isPrimary ? "Primary" : "Set primary"}
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => removePending(img.clientId)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+
+        {productId &&
+          savedGallery.map((img) => (
+            <div key={img.id} className="relative rounded-lg border border-border bg-white p-2">
+              {img.public_url && (
+                <img src={img.public_url} alt="" className="mx-auto h-36 w-full object-contain" />
+              )}
+              <div className="mt-2 flex gap-1">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={img.is_primary ? "default" : "secondary"}
+                  onClick={() => setPrimary.mutate(img.id)}
+                >
+                  <Star className="mr-1 h-3 w-3" />
+                  {img.is_primary ? "Primary" : "Set primary"}
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => removeImage.mutate(img.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+      </div>
+
       <input
         ref={fileRef}
         type="file"
@@ -157,4 +234,23 @@ export function ProductImagesEditor({ productId }: { productId: string | null })
       </Button>
     </div>
   );
+}
+
+/** Insert gallery rows after a new product is created. */
+export async function attachPendingProductImages(
+  productId: string,
+  pendingImages: PendingProductImage[],
+) {
+  if (!pendingImages.length) return;
+  const supabase = getSupabase();
+  const { error } = await supabase.from("product_images").insert(
+    pendingImages.map((img, index) => ({
+      product_id: productId,
+      public_url: img.publicUrl,
+      storage_path: img.storagePath,
+      sort_order: index,
+      is_primary: img.isPrimary,
+    })),
+  );
+  if (error) throw error;
 }

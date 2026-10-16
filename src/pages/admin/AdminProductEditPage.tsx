@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ProductImagesEditor } from "@/components/admin/ProductImagesEditor";
+import {
+  attachPendingProductImages,
+  ProductImagesEditor,
+  type PendingProductImage,
+} from "@/components/admin/ProductImagesEditor";
 
 type ProductForm = {
   name: string;
@@ -38,6 +42,8 @@ export function AdminProductEditPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const isNew = id === "new";
+  const stagingIdRef = useRef(crypto.randomUUID());
+  const [pendingImages, setPendingImages] = useState<PendingProductImage[]>([]);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["admin-product", id],
@@ -62,6 +68,12 @@ export function AdminProductEditPage() {
     },
   });
 
+  const watchedSlug = form.watch("slug");
+  const stagingKey = useMemo(() => {
+    const slug = watchedSlug?.trim();
+    return slug || stagingIdRef.current;
+  }, [watchedSlug]);
+
   useEffect(() => {
     if (product) {
       form.reset({
@@ -82,7 +94,13 @@ export function AdminProductEditPage() {
   }, [product, form]);
 
   const saveMutation = useMutation({
-    mutationFn: async (values: ProductForm) => {
+    mutationFn: async ({
+      values,
+      pending,
+    }: {
+      values: ProductForm;
+      pending: PendingProductImage[];
+    }) => {
       const supabase = getSupabase();
       const payload = {
         ...values,
@@ -96,6 +114,7 @@ export function AdminProductEditPage() {
           .select("id")
           .single();
         if (error) throw error;
+        await attachPendingProductImages(data.id, pending);
         await supabase.from("activity_logs").insert({
           action_type: "product_created",
           entity_type: "product",
@@ -115,6 +134,7 @@ export function AdminProductEditPage() {
     onSuccess: (savedId) => {
       toast.success("Product saved");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      setPendingImages([]);
       if (isNew && savedId) {
         navigate(`/admin/products/${savedId}`);
         return;
@@ -136,8 +156,17 @@ export function AdminProductEditPage() {
       </div>
       <form
         className="space-y-4 rounded-xl border border-border bg-white p-5"
-        onSubmit={form.handleSubmit((values) => saveMutation.mutate(values))}
+        onSubmit={form.handleSubmit((values) =>
+          saveMutation.mutate({ values, pending: pendingImages }),
+        )}
       >
+        <ProductImagesEditor
+          productId={isNew ? null : id}
+          stagingKey={stagingKey}
+          pendingImages={pendingImages}
+          onPendingImagesChange={setPendingImages}
+        />
+
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
             <Label>Name</Label>
@@ -192,8 +221,6 @@ export function AdminProductEditPage() {
           Save product
         </Button>
       </form>
-
-      <ProductImagesEditor productId={isNew ? null : id} />
     </div>
   );
 }
