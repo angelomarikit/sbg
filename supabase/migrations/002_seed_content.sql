@@ -12,6 +12,17 @@ select 'Salveo Barley Grass', '/assets/brand/logo.png', 150,
   'Food supplements are not substitutes for a balanced diet. NO APPROVED THERAPEUTIC CLAIMS where applicable.'
 where not exists (select 1 from public.site_settings limit 1);
 
+insert into public.payment_methods (id, name, qr_image_url, instructions, is_active, display_order)
+values (
+  '44444444-4444-4444-4444-444444444401',
+  'Cash on Delivery',
+  null,
+  'Pay the exact order total in cash when your order is delivered.',
+  true,
+  1
+)
+on conflict (id) do nothing;
+
 -- Products (UUIDs fixed for seed references)
 insert into public.products (id, name, slug, sku, category_id, short_description, description, regular_price, sale_price, stock_quantity, is_active, is_featured, specifications, ingredients, usage_notes)
 values
@@ -45,8 +56,8 @@ insert into public.faqs (question, answer, sort_order) values
   ('What is Salveo Barley Grass?', 'Salveo Barley Grass (SBG) is a food supplement from barley grass in several formats.', 1),
   ('What product formats are available?', 'Powder jar, trial pack, on-the-go sachets, and capsules.', 2),
   ('How can I place an order?', 'Choose a product, set quantity, and complete checkout.', 3),
-  ('What payment methods are accepted?', 'Manual QR payments as shown at checkout (GCash, Maya, bank transfer).', 4),
-  ('How do I submit proof of payment?', 'Upload your receipt on checkout after placing the order.', 5),
+  ('What payment methods are accepted?', 'Cash on Delivery (COD) only — pay in cash when your order arrives.', 4),
+  ('How do I submit proof of payment?', 'No online proof is required. Prepare the exact cash amount at delivery.', 5),
   ('How can I check my order status?', 'Use order status lookup with your reference and mobile number.', 6),
   ('How do I contact customer support?', 'See footer contact details or Messenger link.', 7)
 on conflict do nothing;

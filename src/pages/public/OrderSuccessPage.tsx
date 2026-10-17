@@ -14,21 +14,21 @@ export function OrderSuccessPage() {
       <PageMeta title="Order Received | Salveo" />
       <h1 className="text-3xl font-bold text-deep">Thank You for Your Order!</h1>
       <p className="mt-3 text-muted">
-        Your order has been received. Payment confirmation is pending verification.
+        Your order has been received. Please prepare cash on delivery for the total below.
       </p>
       <div className="mt-8 rounded-xl border border-border bg-surface p-6 text-left">
         <p className="text-sm text-muted">Order reference</p>
         <p className="text-xl font-bold text-deep">{order?.public_reference ?? id}</p>
         {order?.grand_total != null && (
           <p className="mt-3 text-sm">
-            Total amount: <strong>{formatPHP(order.grand_total)}</strong>
+            Pay on delivery: <strong>{formatPHP(order.grand_total)}</strong>
           </p>
         )}
         <p className="mt-3 text-sm text-muted">
-          Status: {order?.payment_status ?? "awaiting_payment / payment_review"}
+          Payment method: <strong>Cash on Delivery</strong>
         </p>
         <p className="mt-4 text-sm text-muted">
-          If you have not uploaded proof of payment yet, please message support with your reference number.
+          Our team will reach out to confirm your delivery schedule. Keep your reference number handy.
         </p>
       </div>
       <div className="mt-6 flex flex-wrap justify-center gap-3">

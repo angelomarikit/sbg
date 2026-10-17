@@ -86,7 +86,10 @@ export function AdminPaymentsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-deep">Payment Settings</h1>
-        <p className="text-sm text-muted">Edit QR codes, account details, and checkout instructions.</p>
+        <p className="text-sm text-muted">
+          Checkout is Cash on Delivery only. Edit the COD message shown to customers (QR uploads are not
+          used).
+        </p>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-2">

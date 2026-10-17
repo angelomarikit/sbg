@@ -240,8 +240,7 @@ export const defaultFaqs: Faq[] = [
   {
     id: "faq-4",
     question: "What payment methods are accepted?",
-    answer:
-      "We accept manual QR payments (GCash, Maya, or bank transfer) as configured on the checkout page.",
+    answer: "Cash on Delivery (COD) only. Pay in cash when your order is delivered.",
     sort_order: 4,
     is_visible: true,
   },
@@ -249,7 +248,7 @@ export const defaultFaqs: Faq[] = [
     id: "faq-5",
     question: "How do I submit proof of payment?",
     answer:
-      "After placing your order, upload a screenshot or receipt on the checkout page along with your reference number if available.",
+      "No online proof is required. Prepare the exact cash amount when your order arrives.",
     sort_order: 5,
     is_visible: true,
   },

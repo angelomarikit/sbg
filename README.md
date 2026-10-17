@@ -29,6 +29,7 @@ Without Supabase env vars, the public site uses local catalog/section fallbacks 
    - `002_seed_content.sql`
    - `003_storage.sql`
    - `004_media_assets_policies.sql`
+   - `005_cod_payment.sql`
 3. Set environment variables locally and on Vercel:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
@@ -60,10 +61,12 @@ While logged in as admin, use **Upload image** on:
 
 Ensure migrations `003_storage.sql` and `004_media_assets_policies.sql` are applied.
 
-## Payment QR
+## Checkout payment
 
-1. Open **Admin → Payments**.
-2. Add GCash/Maya/bank method and use **Upload image** for the QR (stored in `payment-qr`).
+Checkout uses **Cash on Delivery (COD)** only — no GCash QR or receipt upload on the site.
+
+1. Run migration `005_cod_payment.sql` on existing Supabase projects.
+2. Optional: edit COD instructions under **Admin → Payments**.
 
 ## Shipping fee
 

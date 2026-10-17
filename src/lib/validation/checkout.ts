@@ -18,8 +18,7 @@ export const checkoutFormSchema = z.object({
   streetAddress: z.string().min(5, "Enter your street address"),
   postalCode: z.string().min(4, "Enter postal code"),
   deliveryInstructions: z.string().optional(),
-  paymentMethodId: z.string().min(1, "Select a payment method"),
-  transactionReference: z.string().optional(),
+  paymentMethodId: z.string().min(1, "Payment method is required"),
 });
 
 export type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;
