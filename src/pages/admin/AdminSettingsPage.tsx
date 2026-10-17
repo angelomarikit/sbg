@@ -29,6 +29,9 @@ export function AdminSettingsPage() {
     disclaimer: "",
     seo_default_title: "",
     seo_default_description: "",
+    social_facebook: "",
+    social_instagram: "",
+    free_shipping_threshold: "" as number | "",
   });
 
   useEffect(() => {
@@ -44,6 +47,10 @@ export function AdminSettingsPage() {
         disclaimer: settings.disclaimer ?? "",
         seo_default_title: settings.seo_default_title ?? "",
         seo_default_description: settings.seo_default_description ?? "",
+        social_facebook: settings.social_facebook ?? "",
+        social_instagram: settings.social_instagram ?? "",
+        free_shipping_threshold:
+          settings.free_shipping_threshold != null ? Number(settings.free_shipping_threshold) : "",
       });
     }
   }, [settings]);
@@ -51,11 +58,15 @@ export function AdminSettingsPage() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       const supabase = getSupabase();
+      const payload = {
+        ...form,
+        free_shipping_threshold: form.free_shipping_threshold === "" ? null : form.free_shipping_threshold,
+      };
       if (settings?.id) {
-        const { error } = await supabase.from("site_settings").update(form).eq("id", settings.id);
+        const { error } = await supabase.from("site_settings").update(payload).eq("id", settings.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("site_settings").insert(form);
+        const { error } = await supabase.from("site_settings").insert(payload);
         if (error) throw error;
       }
     },
@@ -132,6 +143,35 @@ export function AdminSettingsPage() {
           <Textarea
             value={form.seo_default_description}
             onChange={(e) => setForm({ ...form, seo_default_description: e.target.value })}
+          />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <Label>Facebook URL</Label>
+            <Input
+              value={form.social_facebook}
+              onChange={(e) => setForm({ ...form, social_facebook: e.target.value })}
+            />
+          </div>
+          <div>
+            <Label>Instagram URL</Label>
+            <Input
+              value={form.social_instagram}
+              onChange={(e) => setForm({ ...form, social_instagram: e.target.value })}
+            />
+          </div>
+        </div>
+        <div>
+          <Label>Free shipping threshold (PHP, optional)</Label>
+          <Input
+            type="number"
+            value={form.free_shipping_threshold}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                free_shipping_threshold: e.target.value === "" ? "" : Number(e.target.value),
+              })
+            }
           />
         </div>
         <Button type="submit">Save settings</Button>

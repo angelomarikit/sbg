@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package, ShoppingCart, Settings, FileText, Image, MessageSquare, CreditCard, Activity, Tag, LogOut, Menu } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Settings, FileText, Image, MessageSquare, CreditCard, Activity, Tag, LogOut, Menu, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { adminSignOut } from "@/features/auth/AdminGuard";
@@ -15,6 +15,7 @@ const links = [
   { to: "/admin/payments", label: "Payments", icon: CreditCard },
   { to: "/admin/media", label: "Media", icon: Image },
   { to: "/admin/testimonials", label: "Testimonials", icon: MessageSquare },
+  { to: "/admin/faqs", label: "FAQs", icon: HelpCircle },
   { to: "/admin/settings", label: "Settings", icon: Settings },
   { to: "/admin/activity", label: "Activity", icon: Activity },
 ];

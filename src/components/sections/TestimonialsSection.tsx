@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { FadeInSection } from "@/components/sections/FadeInSection";
 import { DISCLAIMERS } from "@/config/theme";
-import { fetchLandingTestimonials } from "@/services/cmsService";
+import { fetchLandingTestimonials, fetchSectionByKey } from "@/services/cmsService";
 import { localAssets, resolveAssetUrl } from "@/config/assets";
 
 export function TestimonialsSection() {
@@ -9,18 +9,27 @@ export function TestimonialsSection() {
     queryKey: ["landing-testimonials"],
     queryFn: fetchLandingTestimonials,
   });
+  const { data: section } = useQuery({
+    queryKey: ["section", "testimonials"],
+    queryFn: () => fetchSectionByKey("testimonials"),
+  });
 
   const items = testimonials ?? [];
+  if (section && !section.is_visible) return null;
 
   return (
     <section id="testimonials" className="bg-gradient-to-b from-white to-fresh/50 py-14 md:py-20">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <FadeInSection>
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold text-deep">Customer Experiences</h2>
+            <h2 className="text-3xl font-bold text-deep">
+              {section?.title ?? "Customer Experiences"}
+            </h2>
             <p className="mt-2 text-muted">
-              Real stories shared by customers who use Salveo products in their everyday routines.
+              {section?.body ??
+                "Real stories shared by customers who use Salveo products in their everyday routines."}
             </p>
+            {section?.subtitle && <p className="mt-1 text-sm text-primary">{section.subtitle}</p>}
           </div>
         </FadeInSection>
 

@@ -1,9 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { getSupabase } from "@/lib/supabase/client";
 import { formatPHP } from "@/lib/formatting/currency";
 import { Badge } from "@/components/ui/badge";
-import { ImageUploadField } from "@/components/admin/ImageUploadField";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { resolveAssetUrl, localAssets } from "@/config/assets";
 
 async function fetchPromotions() {
   const supabase = getSupabase();
@@ -13,34 +14,25 @@ async function fetchPromotions() {
 }
 
 export function AdminPromotionsPage() {
-  const qc = useQueryClient();
   const { data: promos, isLoading } = useQuery({
     queryKey: ["admin-promotions"],
     queryFn: fetchPromotions,
   });
 
-  const updateImage = useMutation({
-    mutationFn: async ({ id, image_url }: { id: string; image_url: string }) => {
-      const supabase = getSupabase();
-      const { error } = await supabase
-        .from("promotions")
-        .update({ image_url, updated_at: new Date().toISOString() })
-        .eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Promotion image updated");
-      qc.invalidateQueries({ queryKey: ["admin-promotions"] });
-    },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Update failed"),
-  });
-
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-deep">Promotional Packages</h1>
-      <p className="text-sm text-muted">
-        Upload package artwork to Supabase Storage. Keep DB prices aligned with your promo images.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-deep">Promotional Packages</h1>
+          <p className="text-sm text-muted">
+            Add or edit packages shown in the landing promos section. Match prices to your artwork.
+          </p>
+        </div>
+        <Button asChild>
+          <Link to="/admin/promotions/new">Add promotion</Link>
+        </Button>
+      </div>
+
       {isLoading ? (
         <p>Loading…</p>
       ) : (
@@ -48,31 +40,29 @@ export function AdminPromotionsPage() {
           {(promos ?? []).map((promo) => {
             const savings = Number(promo.regular_total) - Number(promo.promotional_price);
             return (
-              <div key={promo.id} className="rounded-xl border border-border bg-white p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="font-bold text-deep">{promo.name}</h2>
-                  {promo.is_active ? <Badge>Active</Badge> : <Badge variant="muted">Inactive</Badge>}
-                </div>
-                <p className="mt-1 text-sm text-muted">{promo.description}</p>
-                <p className="mt-3 text-sm">
-                  DB price: {formatPHP(Number(promo.promotional_price))} (was{" "}
-                  {formatPHP(Number(promo.regular_total))})
-                </p>
-                <p className="text-sm text-primary">Save {formatPHP(savings)}</p>
-                {promo.image_price_note && (
-                  <p className="mt-2 rounded-lg bg-accent/20 p-2 text-xs text-deep">
-                    Image check: {promo.image_price_note}
+              <div key={promo.id} className="overflow-hidden rounded-xl border border-border bg-white">
+                <img
+                  src={resolveAssetUrl(promo.image_url, localAssets.promotions.promo3)}
+                  alt=""
+                  className="h-44 w-full object-cover object-top"
+                />
+                <div className="space-y-2 p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="font-bold text-deep">{promo.name}</h2>
+                    {promo.is_active ? <Badge>Active</Badge> : <Badge variant="muted">Inactive</Badge>}
+                    {promo.is_featured && <Badge variant="sale">Featured</Badge>}
+                  </div>
+                  <p className="text-sm text-muted">{promo.description}</p>
+                  <p className="text-sm">
+                    {formatPHP(Number(promo.promotional_price))}{" "}
+                    <span className="text-muted line-through">
+                      {formatPHP(Number(promo.regular_total))}
+                    </span>
                   </p>
-                )}
-                <div className="mt-4">
-                  <ImageUploadField
-                    label="Promo image"
-                    folder={`promotions/${promo.slug}`}
-                    category="promotions"
-                    value={promo.image_url ?? ""}
-                    onChange={(url) => updateImage.mutate({ id: promo.id, image_url: url })}
-                    allowUrlFallback
-                  />
+                  <p className="text-sm text-primary">Save {formatPHP(savings)}</p>
+                  <Button asChild size="sm" variant="secondary">
+                    <Link to={`/admin/promotions/${promo.id}`}>Edit promotion</Link>
+                  </Button>
                 </div>
               </div>
             );

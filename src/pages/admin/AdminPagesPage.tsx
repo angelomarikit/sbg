@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getSupabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { SiteSection } from "@/types/database";
+import type { Json, SiteSection } from "@/types/database";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
+import { SectionExtrasEditor } from "@/components/admin/SectionExtrasEditor";
 
 const sectionKeys = [
   "hero",
@@ -35,28 +36,60 @@ async function fetchSections() {
   return (data as SiteSection[]) ?? [];
 }
 
+type SectionDraft = {
+  title: string;
+  subtitle: string;
+  body: string;
+  image_url: string;
+  is_visible: boolean;
+  content_json: Json | null;
+};
+
+const emptyDraft = (): SectionDraft => ({
+  title: "",
+  subtitle: "",
+  body: "",
+  image_url: "",
+  is_visible: true,
+  content_json: {},
+});
+
 export function AdminPagesPage() {
   const qc = useQueryClient();
   const { data: sections } = useQuery({ queryKey: ["admin-sections"], queryFn: fetchSections });
   const [selectedKey, setSelectedKey] = useState("hero");
-  const selected = sections?.find((s) => s.section_key === selectedKey);
+  const selected = useMemo(
+    () => sections?.find((s) => s.section_key === selectedKey),
+    [sections, selectedKey],
+  );
 
-  const [draft, setDraft] = useState<Partial<SiteSection>>({});
+  const [draft, setDraft] = useState<SectionDraft>(emptyDraft());
 
-  const loadDraft = (section: SiteSection | undefined) => {
-    if (!section) return;
-    setDraft(section);
-  };
+  useEffect(() => {
+    if (selected) {
+      setDraft({
+        title: selected.title ?? "",
+        subtitle: selected.subtitle ?? "",
+        body: selected.body ?? "",
+        image_url: selected.image_url ?? "",
+        is_visible: selected.is_visible ?? true,
+        content_json: selected.content_json ?? {},
+      });
+    } else {
+      setDraft(emptyDraft());
+    }
+  }, [selectedKey, selected]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
       const supabase = getSupabase();
       const payload = {
-        title: draft.title,
-        subtitle: draft.subtitle,
-        body: draft.body,
-        image_url: draft.image_url,
-        is_visible: draft.is_visible ?? true,
+        title: draft.title || null,
+        subtitle: draft.subtitle || null,
+        body: draft.body || null,
+        image_url: draft.image_url || null,
+        content_json: draft.content_json ?? {},
+        is_visible: draft.is_visible,
         publish_status: "published",
         updated_at: new Date().toISOString(),
       };
@@ -68,7 +101,7 @@ export function AdminPagesPage() {
           page_id: "home",
           section_key: selectedKey,
           section_type: "custom",
-          display_order: 0,
+          display_order: sectionKeys.indexOf(selectedKey) + 1,
           ...payload,
         });
         if (error) throw error;
@@ -82,8 +115,12 @@ export function AdminPagesPage() {
     onSuccess: () => {
       toast.success("Section published");
       qc.invalidateQueries({ queryKey: ["admin-sections"] });
+      qc.invalidateQueries({ queryKey: ["section", selectedKey] });
     },
+    onError: (err) => toast.error(err instanceof Error ? err.message : "Save failed"),
   });
+
+  const showImageField = !["trust_strip", "promotions", "testimonials", "faq", "footer"].includes(selectedKey);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
@@ -94,53 +131,51 @@ export function AdminPagesPage() {
             key={key}
             type="button"
             className={`block w-full rounded-lg px-3 py-2 text-left text-sm ${selectedKey === key ? "bg-fresh font-semibold" : "hover:bg-surface"}`}
-            onClick={() => {
-              setSelectedKey(key);
-              loadDraft(sections?.find((s) => s.section_key === key));
-            }}
+            onClick={() => setSelectedKey(key)}
           >
             {key.replaceAll("_", " ")}
           </button>
         ))}
       </div>
-      <div className="rounded-xl border border-border bg-white p-5 space-y-4">
+      <div className="space-y-4 rounded-xl border border-border bg-white p-5">
         <h2 className="font-bold capitalize text-deep">{selectedKey.replaceAll("_", " ")}</h2>
         {!selected && (
           <p className="text-sm text-muted">No record yet — fill fields and publish to create this section.</p>
         )}
         <div>
-          <Label>Title</Label>
-          <Input
-            value={draft.title ?? selected?.title ?? ""}
-            onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-          />
+          <Label>Heading / title</Label>
+          <Input value={draft.title} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))} />
         </div>
         <div>
-          <Label>Subtitle</Label>
-          <Input
-            value={draft.subtitle ?? selected?.subtitle ?? ""}
-            onChange={(e) => setDraft((d) => ({ ...d, subtitle: e.target.value }))}
-          />
+          <Label>Subtitle / eyebrow</Label>
+          <Input value={draft.subtitle} onChange={(e) => setDraft((d) => ({ ...d, subtitle: e.target.value }))} />
         </div>
         <div>
-          <Label>Body</Label>
+          <Label>Body / caption</Label>
           <Textarea
             rows={4}
-            value={draft.body ?? selected?.body ?? ""}
+            value={draft.body}
             onChange={(e) => setDraft((d) => ({ ...d, body: e.target.value }))}
           />
         </div>
-        <ImageUploadField
-          label="Section image"
-          folder={`sections/${selectedKey}`}
-          category="banners"
-          value={draft.image_url ?? selected?.image_url ?? ""}
-          onChange={(url) => setDraft((d) => ({ ...d, image_url: url }))}
+        {showImageField && (
+          <ImageUploadField
+            label="Section image"
+            folder={`sections/${selectedKey}`}
+            category="banners"
+            value={draft.image_url}
+            onChange={(url) => setDraft((d) => ({ ...d, image_url: url }))}
+          />
+        )}
+        <SectionExtrasEditor
+          sectionKey={selectedKey}
+          contentJson={draft.content_json}
+          onChange={(content_json) => setDraft((d) => ({ ...d, content_json }))}
         />
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
-            checked={draft.is_visible ?? selected?.is_visible ?? true}
+            checked={draft.is_visible}
             onChange={(e) => setDraft((d) => ({ ...d, is_visible: e.target.checked }))}
           />
           Visible on landing page

@@ -38,6 +38,12 @@ const AdminProductEditPage = lazy(() =>
 const AdminPromotionsPage = lazy(() =>
   import("@/pages/admin/AdminPromotionsPage").then((m) => ({ default: m.AdminPromotionsPage })),
 );
+const AdminPromotionEditPage = lazy(() =>
+  import("@/pages/admin/AdminPromotionEditPage").then((m) => ({ default: m.AdminPromotionEditPage })),
+);
+const AdminFaqsPage = lazy(() =>
+  import("@/pages/admin/AdminFaqsPage").then((m) => ({ default: m.AdminFaqsPage })),
+);
 const AdminOrdersPage = lazy(() =>
   import("@/pages/admin/AdminOrdersPage").then((m) => ({ default: m.AdminOrdersPage })),
 );
@@ -92,6 +98,9 @@ export function AppRouter() {
               <Route path="products/:id" element={<AdminProductEditPage />} />
               <Route path="categories" element={<Navigate to="/admin/products" replace />} />
               <Route path="promotions" element={<AdminPromotionsPage />} />
+              <Route path="promotions/new" element={<AdminPromotionEditPage />} />
+              <Route path="promotions/:id" element={<AdminPromotionEditPage />} />
+              <Route path="faqs" element={<AdminFaqsPage />} />
               <Route path="orders" element={<AdminOrdersPage />} />
               <Route path="orders/:id" element={<AdminOrderDetailPage />} />
               <Route path="payments" element={<AdminPaymentsPage />} />

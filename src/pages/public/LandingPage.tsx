@@ -57,12 +57,38 @@ export function LandingPage() {
     queryKey: ["section", "lifestyle"],
     queryFn: () => fetchSectionByKey("lifestyle"),
   });
+  const { data: trustStrip } = useQuery({
+    queryKey: ["section", "trust_strip"],
+    queryFn: () => fetchSectionByKey("trust_strip"),
+  });
+  const { data: productsSection } = useQuery({
+    queryKey: ["section", "products"],
+    queryFn: () => fetchSectionByKey("products"),
+  });
+  const { data: formatsSection } = useQuery({
+    queryKey: ["section", "formats"],
+    queryFn: () => fetchSectionByKey("formats"),
+  });
+  const { data: promotionsSection } = useQuery({
+    queryKey: ["section", "promotions"],
+    queryFn: () => fetchSectionByKey("promotions"),
+  });
+  const { data: faqSection } = useQuery({
+    queryKey: ["section", "faq"],
+    queryFn: () => fetchSectionByKey("faq"),
+  });
+  const { data: finalCta } = useQuery({
+    queryKey: ["section", "final_cta"],
+    queryFn: () => fetchSectionByKey("final_cta"),
+  });
   const { data: settings } = useQuery({
     queryKey: ["site-settings"],
     queryFn: fetchSiteSettings,
   });
 
-  const heroJson = (hero?.content_json ?? {}) as Record<string, { label: string; href: string }>;
+  const heroJson = (hero?.content_json ?? {}) as Record<string, { label: string; href: string }> & {
+    trustLine?: string;
+  };
   const whyJson = (why?.content_json ?? {}) as {
     bullets?: string[];
     cta?: { label: string; href: string };
@@ -70,6 +96,48 @@ export function LandingPage() {
   const lifestyleJson = (lifestyle?.content_json ?? {}) as {
     cta?: { label: string; href: string };
   };
+  const trustJson = (trustStrip?.content_json ?? {}) as { items?: { title: string }[] };
+  const formatsJson = (formatsSection?.content_json ?? {}) as {
+    items?: { title: string; slug: string; caption: string; image_url: string }[];
+  };
+  const finalCtaJson = (finalCta?.content_json ?? {}) as {
+    cta?: { label: string; href: string };
+  };
+
+  const trustTitles =
+    trustJson.items?.length && trustStrip?.is_visible !== false
+      ? trustJson.items.map((i) => i.title)
+      : trustItems.map((t) => t.title);
+
+  const formatCards =
+    formatsJson.items?.length && formatsSection?.is_visible !== false
+      ? formatsJson.items
+      : [
+          {
+            title: "Powder in Jar",
+            slug: "sbg-powder-jar-240g",
+            caption: "Learn more about this Salveo format.",
+            image_url: localAssets.promotions.promo5,
+          },
+          {
+            title: "Trial Pack",
+            slug: "sbg-trial-pack-80g",
+            caption: "Learn more about this Salveo format.",
+            image_url: localAssets.products.product4,
+          },
+          {
+            title: "On The Go Sachets",
+            slug: "sbg-on-the-go-12",
+            caption: "Learn more about this Salveo format.",
+            image_url: localAssets.products.product2,
+          },
+          {
+            title: "Capsules",
+            slug: "sbg-capsules-120",
+            caption: "Learn more about this Salveo format.",
+            image_url: localAssets.products.product3,
+          },
+        ];
 
   return (
     <>
@@ -105,7 +173,7 @@ export function LandingPage() {
                 </Button>
               </div>
               <p className="mt-4 text-sm text-muted">
-                Explore the available barley grass formats and packages.
+                {heroJson.trustLine ?? "Explore the available barley grass formats and packages."}
               </p>
             </div>
           </FadeInSection>
@@ -121,16 +189,21 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="border-y border-border bg-surface py-8">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 md:grid-cols-4 md:px-6">
-          {trustItems.map(({ icon: Icon, title }) => (
-            <div key={title} className="rounded-xl border border-border bg-white p-4">
-              <Icon className="mb-2 h-5 w-5 text-primary" aria-hidden />
-              <p className="text-sm font-semibold text-deep">{title}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {trustStrip?.is_visible !== false && (
+        <section className="border-y border-border bg-surface py-8">
+          <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 md:grid-cols-4 md:px-6">
+            {trustTitles.map((title, index) => {
+              const Icon = trustItems[index]?.icon ?? Leaf;
+              return (
+                <div key={title} className="rounded-xl border border-border bg-white p-4">
+                  <Icon className="mb-2 h-5 w-5 text-primary" aria-hidden />
+                  <p className="text-sm font-semibold text-deep">{title}</p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section id="why-salveo" className="bg-gradient-to-b from-fresh/50 to-white py-14 md:py-20">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 md:px-6 lg:grid-cols-2">
@@ -163,12 +236,16 @@ export function LandingPage() {
         </div>
       </section>
 
+      {productsSection?.is_visible !== false && (
       <section id="products" className="bg-surface py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className="mb-8 max-w-2xl">
-            <h2 className="text-3xl font-bold text-deep">Find Your Salveo Product</h2>
+            <h2 className="text-3xl font-bold text-deep">
+              {productsSection?.title ?? "Find Your Salveo Product"}
+            </h2>
             <p className="mt-2 text-muted">
-              Explore our available products and find the right format for you.
+              {productsSection?.body ??
+                "Explore our available products and find the right format for you."}
             </p>
           </div>
           {loadingProducts ? (
@@ -190,6 +267,7 @@ export function LandingPage() {
           )}
         </div>
       </section>
+      )}
 
       <section id="lifestyle" className="bg-gradient-to-b from-white to-fresh/40 py-14 md:py-20">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 md:px-6 lg:grid-cols-2">
@@ -213,33 +291,43 @@ export function LandingPage() {
         </div>
       </section>
 
+      {formatsSection?.is_visible !== false && (
       <section id="formats" className="border-y border-border bg-white py-14">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <h2 className="text-3xl font-bold text-deep">Available Product Formats</h2>
+          <h2 className="text-3xl font-bold text-deep">
+            {formatsSection?.title ?? "Available Product Formats"}
+          </h2>
+          {formatsSection?.body && <p className="mt-2 text-muted">{formatsSection.body}</p>}
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {[
-              ["Powder in Jar", "sbg-powder-jar-240g", localAssets.promotions.promo5],
-              ["Trial Pack", "sbg-trial-pack-80g", localAssets.products.product4],
-              ["On The Go Sachets", "sbg-on-the-go-12", localAssets.products.product2],
-              ["Capsules", "sbg-capsules-120", localAssets.products.product3],
-            ].map(([title, slug, img]) => (
-              <div key={slug} className="rounded-xl border border-border p-4">
-                <img src={img} alt="" className="mx-auto h-28 object-contain" loading="lazy" />
-                <h3 className="mt-3 font-semibold text-deep">{title}</h3>
-                <p className="mt-1 text-sm text-muted">Learn more about this Salveo format.</p>
+            {formatCards.map((card) => (
+              <div key={card.slug} className="rounded-xl border border-border p-4">
+                <img
+                  src={resolveAssetUrl(card.image_url, localAssets.products.product2)}
+                  alt=""
+                  className="mx-auto h-28 object-contain"
+                  loading="lazy"
+                />
+                <h3 className="mt-3 font-semibold text-deep">{card.title}</h3>
+                <p className="mt-1 text-sm text-muted">{card.caption}</p>
                 <Button asChild variant="secondary" size="sm" className="mt-3 w-full">
-                  <Link to={`/products/${slug}`}>View details</Link>
+                  <Link to={`/products/${card.slug}`}>View details</Link>
                 </Button>
               </div>
             ))}
           </div>
         </div>
       </section>
+      )}
 
+      {promotionsSection?.is_visible !== false && (
       <section id="promos" className="bg-surface py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <h2 className="text-3xl font-bold text-deep">More Value with Salveo Packages</h2>
-          <p className="mt-2 text-muted">Explore available packages and exclusive offers.</p>
+          <h2 className="text-3xl font-bold text-deep">
+            {promotionsSection?.title ?? "More Value with Salveo Packages"}
+          </h2>
+          <p className="mt-2 text-muted">
+            {promotionsSection?.body ?? "Explore available packages and exclusive offers."}
+          </p>
           <div className="mt-8 grid gap-6 lg:grid-cols-3">
             {(promos ?? []).slice(0, 3).map((promo) => {
               const savings = promo.regular_total - promo.promotional_price;
@@ -276,12 +364,17 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+      )}
 
       <TestimonialsSection />
 
+      {faqSection?.is_visible !== false && (
       <section id="faqs" className="bg-surface py-14 md:py-20">
         <div className="mx-auto max-w-3xl px-4 md:px-6">
-          <h2 className="text-center text-3xl font-bold text-deep">FAQs</h2>
+          <h2 className="text-center text-3xl font-bold text-deep">
+            {faqSection?.title ?? "FAQs"}
+          </h2>
+          {faqSection?.body && <p className="mt-2 text-center text-muted">{faqSection.body}</p>}
           <Accordion type="single" collapsible className="mt-8">
             {(faqs ?? []).map((faq) => (
               <AccordionItem key={faq.id} value={faq.id}>
@@ -292,18 +385,25 @@ export function LandingPage() {
           </Accordion>
         </div>
       </section>
+      )}
 
+      {finalCta?.is_visible !== false && (
       <section className="bg-fresh py-14">
         <div className="mx-auto max-w-3xl px-4 text-center md:px-6">
-          <h2 className="text-3xl font-bold text-deep">Ready to Explore Salveo?</h2>
+          <h2 className="text-3xl font-bold text-deep">
+            {finalCta?.title ?? "Ready to Explore Salveo?"}
+          </h2>
           <p className="mt-3 text-muted">
-            Browse our products and choose the option that suits your preferences.
+            {finalCta?.body ?? "Browse our products and choose the option that suits your preferences."}
           </p>
           <Button asChild size="lg" className="mt-6">
-            <a href="#products">Shop Salveo Products</a>
+            <a href={finalCtaJson.cta?.href ?? "#products"}>
+              {finalCtaJson.cta?.label ?? "Shop Salveo Products"}
+            </a>
           </Button>
         </div>
       </section>
+      )}
     </>
   );
 }
