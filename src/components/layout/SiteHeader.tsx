@@ -2,7 +2,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { localAssets } from "@/config/assets";
-import { SALVEO_APP_DOWNLOAD_URL } from "@/config/site";
+import { SALVEO_APP_DOWNLOAD_URL, SALVEO_APP_REGISTER_LABEL } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,7 @@ const navLinks: { label: string; href: string; external?: boolean }[] = [
   { label: "Home", href: "#top" },
   { label: "Why Salveo", href: "#why-salveo" },
   { label: "Products", href: "#products" },
-  { label: "Download app", href: SALVEO_APP_DOWNLOAD_URL, external: true },
+  { label: SALVEO_APP_REGISTER_LABEL, href: SALVEO_APP_DOWNLOAD_URL, external: true },
   { label: "Testimonials", href: "#testimonials" },
   { label: "FAQs", href: "#faqs" },
 ];

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { FadeInSection } from "@/components/sections/FadeInSection";
 import {
   SALVEO_APP_DOWNLOAD_CAPTION,
-  SALVEO_APP_DOWNLOAD_LABEL,
+  SALVEO_APP_REGISTER_LABEL,
   SALVEO_APP_DOWNLOAD_URL,
 } from "@/config/site";
 
@@ -22,7 +22,7 @@ export function SalveoAppDownloadSection({ variant = "banner" }: SalveoAppDownlo
           rel="noopener noreferrer"
           className="font-semibold text-primary hover:underline"
         >
-          {SALVEO_APP_DOWNLOAD_LABEL}
+          {SALVEO_APP_REGISTER_LABEL}
         </a>
       </p>
     );
@@ -43,11 +43,11 @@ export function SalveoAppDownloadSection({ variant = "banner" }: SalveoAppDownlo
             {SALVEO_APP_DOWNLOAD_CAPTION}
           </h2>
           <p className="max-w-lg text-sm text-muted">
-            Download the official Salveo app for member promos, discounts, and updates.
+            Register on the official Salveo app for member promos, discounts, and updates.
           </p>
           <Button asChild size="lg" className="mt-1">
             <a href={SALVEO_APP_DOWNLOAD_URL} target="_blank" rel="noopener noreferrer">
-              {SALVEO_APP_DOWNLOAD_LABEL}
+              {SALVEO_APP_REGISTER_LABEL}
             </a>
           </Button>
         </div>
