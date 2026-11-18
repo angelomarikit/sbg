@@ -5,12 +5,10 @@ import {
   Package,
   PhoneCall,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { FadeInSection } from "@/components/sections/FadeInSection";
 import { ProductCard } from "@/components/products/ProductCard";
 import { PageMeta } from "@/components/seo/PageMeta";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Accordion,
   AccordionContent,
@@ -18,11 +16,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { localAssets, resolveAssetUrl } from "@/config/assets";
-import { formatPHP } from "@/lib/formatting/currency";
-import {
-  fetchActiveProducts,
-  fetchPromotions,
-} from "@/services/catalogService";
+import { fetchActiveProducts } from "@/services/catalogService";
 import {
   fetchFaqs,
   fetchSectionByKey,
@@ -43,7 +37,6 @@ export function LandingPage() {
     queryKey: ["products"],
     queryFn: fetchActiveProducts,
   });
-  const { data: promos } = useQuery({ queryKey: ["promotions"], queryFn: fetchPromotions });
   const { data: faqs } = useQuery({ queryKey: ["faqs"], queryFn: fetchFaqs });
   const { data: hero } = useQuery({
     queryKey: ["section", "hero"],
@@ -64,14 +57,6 @@ export function LandingPage() {
   const { data: productsSection } = useQuery({
     queryKey: ["section", "products"],
     queryFn: () => fetchSectionByKey("products"),
-  });
-  const { data: formatsSection } = useQuery({
-    queryKey: ["section", "formats"],
-    queryFn: () => fetchSectionByKey("formats"),
-  });
-  const { data: promotionsSection } = useQuery({
-    queryKey: ["section", "promotions"],
-    queryFn: () => fetchSectionByKey("promotions"),
   });
   const { data: faqSection } = useQuery({
     queryKey: ["section", "faq"],
@@ -97,9 +82,6 @@ export function LandingPage() {
     cta?: { label: string; href: string };
   };
   const trustJson = (trustStrip?.content_json ?? {}) as { items?: { title: string }[] };
-  const formatsJson = (formatsSection?.content_json ?? {}) as {
-    items?: { title: string; slug: string; caption: string; image_url: string }[];
-  };
   const finalCtaJson = (finalCta?.content_json ?? {}) as {
     cta?: { label: string; href: string };
   };
@@ -108,36 +90,6 @@ export function LandingPage() {
     trustJson.items?.length && trustStrip?.is_visible !== false
       ? trustJson.items.map((i) => i.title)
       : trustItems.map((t) => t.title);
-
-  const formatCards =
-    formatsJson.items?.length && formatsSection?.is_visible !== false
-      ? formatsJson.items
-      : [
-          {
-            title: "Powder in Jar",
-            slug: "sbg-powder-jar-240g",
-            caption: "Learn more about this Salveo format.",
-            image_url: localAssets.promotions.promo5,
-          },
-          {
-            title: "Trial Pack",
-            slug: "sbg-trial-pack-80g",
-            caption: "Learn more about this Salveo format.",
-            image_url: localAssets.products.product4,
-          },
-          {
-            title: "On The Go Sachets",
-            slug: "sbg-on-the-go-12",
-            caption: "Learn more about this Salveo format.",
-            image_url: localAssets.products.product2,
-          },
-          {
-            title: "Capsules",
-            slug: "sbg-capsules-120",
-            caption: "Learn more about this Salveo format.",
-            image_url: localAssets.products.product3,
-          },
-        ];
 
   return (
     <>
@@ -167,8 +119,8 @@ export function LandingPage() {
                   </a>
                 </Button>
                 <Button asChild variant="secondary" size="lg">
-                  <a href={heroJson.secondaryCta?.href ?? "#promos"}>
-                    {heroJson.secondaryCta?.label ?? "View Promos"}
+                  <a href={heroJson.secondaryCta?.href ?? "#testimonials"}>
+                    {heroJson.secondaryCta?.label ?? "Customer Stories"}
                   </a>
                 </Button>
               </div>
@@ -290,81 +242,6 @@ export function LandingPage() {
           />
         </div>
       </section>
-
-      {formatsSection?.is_visible !== false && (
-      <section id="formats" className="border-y border-border bg-white py-14">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <h2 className="text-3xl font-bold text-deep">
-            {formatsSection?.title ?? "Available Product Formats"}
-          </h2>
-          {formatsSection?.body && <p className="mt-2 text-muted">{formatsSection.body}</p>}
-          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {formatCards.map((card) => (
-              <div key={card.slug} className="rounded-xl border border-border p-4">
-                <img
-                  src={resolveAssetUrl(card.image_url, localAssets.products.product2)}
-                  alt=""
-                  className="mx-auto h-28 object-contain"
-                  loading="lazy"
-                />
-                <h3 className="mt-3 font-semibold text-deep">{card.title}</h3>
-                <p className="mt-1 text-sm text-muted">{card.caption}</p>
-                <Button asChild variant="secondary" size="sm" className="mt-3 w-full">
-                  <Link to={`/products/${card.slug}`}>View details</Link>
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      )}
-
-      {promotionsSection?.is_visible !== false && (
-      <section id="promos" className="bg-surface py-14 md:py-20">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <h2 className="text-3xl font-bold text-deep">
-            {promotionsSection?.title ?? "More Value with Salveo Packages"}
-          </h2>
-          <p className="mt-2 text-muted">
-            {promotionsSection?.body ?? "Explore available packages and exclusive offers."}
-          </p>
-          <div className="mt-8 grid gap-6 lg:grid-cols-3">
-            {(promos ?? []).slice(0, 3).map((promo) => {
-              const savings = promo.regular_total - promo.promotional_price;
-              return (
-                <div key={promo.id} className="overflow-hidden rounded-xl border border-border bg-white">
-                  <img
-                    src={resolveAssetUrl(promo.image_url, localAssets.promotions.promo3)}
-                    alt={promo.name}
-                    className="h-56 w-full object-cover object-top"
-                    loading="lazy"
-                  />
-                  <div className="space-y-2 p-5">
-                    <div className="flex flex-wrap gap-2">
-                      {promo.label && <Badge variant="sale">{promo.label}</Badge>}
-                    </div>
-                    <h3 className="text-lg font-bold text-deep">{promo.name}</h3>
-                    <p className="text-sm text-muted">{promo.description}</p>
-                    <div className="flex items-end gap-2">
-                      <span className="text-xl font-bold text-deep">
-                        {formatPHP(promo.promotional_price)}
-                      </span>
-                      <span className="text-sm text-muted line-through">
-                        {formatPHP(promo.regular_total)}
-                      </span>
-                    </div>
-                    <p className="text-sm font-medium text-primary">Save {formatPHP(savings)}</p>
-                    <Button asChild className="w-full">
-                      <a href="#products">View package products</a>
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-      )}
 
       <TestimonialsSection />
 

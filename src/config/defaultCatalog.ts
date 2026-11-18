@@ -314,8 +314,8 @@ export const defaultSections: SiteSection[] = [
     body: "Discover the Salveo Barley Grass product range and find an option that fits your everyday routine.",
     content_json: {
       primaryCta: { label: "Explore Products", href: "#products" },
-      secondaryCta: { label: "View Promos", href: "#promos" },
-      trustLine: "Explore the available barley grass formats and packages.",
+      secondaryCta: { label: "Customer Stories", href: "#testimonials" },
+      trustLine: "Explore the available barley grass products for your routine.",
       image: localAssets.banners.hero,
     },
     image_url: localAssets.banners.hero,
@@ -436,7 +436,7 @@ export const defaultSections: SiteSection[] = [
     },
     image_url: null,
     display_order: 7,
-    is_visible: true,
+    is_visible: false,
     publish_status: "published",
   },
   {
@@ -450,7 +450,7 @@ export const defaultSections: SiteSection[] = [
     content_json: {},
     image_url: null,
     display_order: 8,
-    is_visible: true,
+    is_visible: false,
     publish_status: "published",
   },
   {

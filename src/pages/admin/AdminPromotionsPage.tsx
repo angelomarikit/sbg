@@ -25,7 +25,7 @@ export function AdminPromotionsPage() {
         <div>
           <h1 className="text-2xl font-bold text-deep">Promotional Packages</h1>
           <p className="text-sm text-muted">
-            Add or edit packages shown in the landing promos section. Match prices to your artwork.
+            Manage promotional package records (not shown on the homepage). Match prices to your artwork.
           </p>
         </div>
         <Button asChild>

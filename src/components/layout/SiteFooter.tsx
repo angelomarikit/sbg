@@ -30,11 +30,6 @@ export function SiteFooter() {
                 Shop all products
               </a>
             </li>
-            <li>
-              <a href="#promos" className="hover:text-primary">
-                Promotional packages
-              </a>
-            </li>
           </ul>
         </div>
         <div>

@@ -9,7 +9,6 @@ const navLinks = [
   { label: "Home", href: "#top" },
   { label: "Why Salveo", href: "#why-salveo" },
   { label: "Products", href: "#products" },
-  { label: "Promos", href: "#promos" },
   { label: "Testimonials", href: "#testimonials" },
   { label: "FAQs", href: "#faqs" },
 ];
