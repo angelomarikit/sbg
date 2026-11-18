@@ -113,19 +113,7 @@ export function LandingPage() {
                 {hero?.body ??
                   "Discover the Salveo Barley Grass product range and find an option that fits your everyday routine."}
               </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button asChild size="lg">
-                  <a href={heroJson.primaryCta?.href ?? "#products"}>
-                    {heroJson.primaryCta?.label ?? "Explore Products"}
-                  </a>
-                </Button>
-                <Button asChild variant="secondary" size="lg">
-                  <a href={heroJson.secondaryCta?.href ?? "#testimonials"}>
-                    {heroJson.secondaryCta?.label ?? "Customer Stories"}
-                  </a>
-                </Button>
-              </div>
-              <p className="mt-4 text-sm text-muted">
+              <p className="mt-6 text-sm text-muted">
                 {heroJson.trustLine ?? "Explore the available barley grass formats and packages."}
               </p>
             </div>
