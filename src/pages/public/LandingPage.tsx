@@ -22,6 +22,7 @@ import {
   fetchSectionByKey,
   fetchSiteSettings,
 } from "@/services/cmsService";
+import { SalveoAppDownloadSection } from "@/components/sections/SalveoAppDownloadSection";
 import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -220,6 +221,8 @@ export function LandingPage() {
         </div>
       </section>
       )}
+
+      <SalveoAppDownloadSection />
 
       <section id="lifestyle" className="bg-gradient-to-b from-white to-fresh/40 py-14 md:py-20">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 md:px-6 lg:grid-cols-2">

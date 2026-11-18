@@ -2,13 +2,15 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { localAssets } from "@/config/assets";
+import { SALVEO_APP_DOWNLOAD_URL } from "@/config/site";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const navLinks = [
+const navLinks: { label: string; href: string; external?: boolean }[] = [
   { label: "Home", href: "#top" },
   { label: "Why Salveo", href: "#why-salveo" },
   { label: "Products", href: "#products" },
+  { label: "Download app", href: SALVEO_APP_DOWNLOAD_URL, external: true },
   { label: "Testimonials", href: "#testimonials" },
   { label: "FAQs", href: "#faqs" },
 ];
@@ -33,9 +35,12 @@ export function SiteHeader() {
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Primary">
           {navLinks.map((link) => (
             <a
-              key={link.href}
+              key={`${link.label}-${link.href}`}
               href={link.href}
               className="text-sm font-medium text-muted hover:text-primary"
+              {...(link.external
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
             >
               {link.label}
             </a>
@@ -67,10 +72,13 @@ export function SiteHeader() {
         <nav className="flex flex-col gap-1 px-4 py-3" aria-label="Mobile">
           {navLinks.map((link) => (
             <a
-              key={link.href}
+              key={`${link.label}-${link.href}`}
               href={link.href}
               className="rounded-lg px-3 py-2 text-sm font-medium text-deep hover:bg-fresh"
               onClick={() => setOpen(false)}
+              {...(link.external
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
             >
               {link.label}
             </a>

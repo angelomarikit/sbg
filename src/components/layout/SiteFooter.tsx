@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { localAssets } from "@/config/assets";
 import { DISCLAIMERS } from "@/config/theme";
+import { SalveoAppDownloadSection } from "@/components/sections/SalveoAppDownloadSection";
 import { fetchSiteSettings } from "@/services/cmsService";
 
 export function SiteFooter() {
@@ -21,6 +22,7 @@ export function SiteFooter() {
             {settings?.footer_description ??
               "Authorized Salveo affiliate — explore products for everyday wellness."}
           </p>
+          <SalveoAppDownloadSection variant="compact" />
         </div>
         <div>
           <h3 className="mb-3 text-sm font-bold text-deep">Products</h3>
